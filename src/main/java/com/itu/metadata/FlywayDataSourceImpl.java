@@ -15,7 +15,7 @@ public class FlywayDataSourceImpl implements FlywayDataSource {
 
     public FlywayDataSourceImpl() throws PropertyVetoException {
         this.dataSource = new ComboPooledDataSource();
-        PropertyFetcher metadataProperties = new PropertyFetcher(new File("/Users/kiran/Documents/github/oop-hotel-res/src/main/resources/db.properties"));
+        PropertyFetcher metadataProperties = new PropertyFetcher(new File(getClass().getClassLoader().getResource("db.properties").getFile()));
         this.dataSource.setDriverClass(metadataProperties.getProperty("DB_DRIVER_CLASS"));
         this.dataSource.setJdbcUrl(metadataProperties.getProperty("DB_URL"));
         this.dataSource.setUser(metadataProperties.getProperty("DB_USERNAME"));
