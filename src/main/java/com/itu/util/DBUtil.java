@@ -1,50 +1,55 @@
 package com.itu.util;
 
+import com.itu.mdObjects.RAvail;
 import com.itu.metadata.FlywayDataSource;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Calendar;
 import java.util.HashMap;
 
 
 public class DBUtil {
     private FlywayDataSource dataSource;
 
-    DBUtil(FlywayDataSource dataSource) {
+    public DBUtil(FlywayDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
-    public void returnAvailableRooms() {
+    public RAvail returnAvailableRooms(Date checkIn, int numberOfDays, String roomType) {
 
-        HashMap<String, Object> result = new HashMap<String, Object>();
         Connection dbConnection = null;
         PreparedStatement preparedStmt;
+        RAvail rAvail = null;
+        Calendar c = Calendar.getInstance();
+        StringBuilder sb = new StringBuilder();
+        sb.append("select room_type, price, count(room_number) as count ");
+        sb.append("from room_type, room_info where room_info.room_type_id=room_type.id and room_number IN ");
+        sb.append("((select room_number from room_info) MINUS ");
+        sb.append("(select room_number from reservation_details ");
+        sb.append("where booking_for_date IN (");
+
+        for (int i=0 ;i<numberOfDays; i++) {
+            c.setTime(checkIn);
+            c.add(Calendar.DATE, i);
+            sb.append("'"+ new Date(c.getTimeInMillis()).toString() + "'"+((i==numberOfDays-1) ? "":","));
+        }
+
+        sb.append("))) and room_type=?");
         try {
             dbConnection = this.dataSource.getConnection();
-
-            preparedStmt = dbConnection.prepareStatement("select field_name, field_type, field_value, stage_title from "+
-                    "plumber_attributes, plumber_recursivemodel where plumber_attributes.id = plumber_recursivemodel.id "+
-                    "and plumber_attributes.id = ?");
-            preparedStmt.setInt(1, id);
+            preparedStmt = dbConnection.prepareStatement(sb.toString());
+            preparedStmt.setString(1,roomType);
             ResultSet resultSet = preparedStmt.executeQuery();
-
+            rAvail = new RAvail();
             if(resultSet.next()) {
-                AttributeO attribute = new AttributeO();
-                attribute.setFieldName(resultSet.getString("field_name"));
-                attribute.setFieldType(resultSet.getString("field_type"));
-                attribute.setFieldValue(resultSet.getString("field_value"));
-                result.put("attribute "+Integer.toString(id), attribute);
-                result.put("modelTitle",resultSet.getString("stage_title"));
+                rAvail.setRoomType(resultSet.getString("room_type"));
+                rAvail.setPrice(resultSet.getInt("price"));
+                rAvail.setCount(resultSet.getInt("count"));
             }
             resultSet.close();
             preparedStmt.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
-            result.put("error code", e.getErrorCode());
-            result.put("error", e.getMessage().substring(0, e.getMessage().indexOf(':')));
         }
         finally {
             if (dbConnection != null) {
@@ -52,14 +57,12 @@ public class DBUtil {
                     dbConnection.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    result.put("error code", e.getErrorCode());
-                    result.put("error", e.getMessage().substring(0,e.getMessage().indexOf(':')));
                 }
             }
         }
 
 
-        return result;
+        return rAvail;
     }
 
 }
