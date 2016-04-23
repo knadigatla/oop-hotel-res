@@ -1,6 +1,7 @@
 package com.itu.util;
 
 import com.itu.mdObjects.RAvail;
+import com.itu.mdObjects.Reservation;
 import com.itu.mdObjects.User;
 import com.itu.metadata.FlywayDataSource;
 import java.sql.*;
@@ -66,7 +67,7 @@ public class DBUtil {
     }
 
 
-    public boolean makeReservation(User user, Date checkIn, int numberOfDays, String roomType) {
+    public String makeReservation(User user, Date checkIn, int numberOfDays, String roomType) {
 
         Connection dbConnection = null;
         PreparedStatement preparedStmt;
@@ -161,7 +162,7 @@ public class DBUtil {
 
             if (rows == (1+numberOfDays)) {
                 dbConnection.commit();
-                return true;
+                return conf_code;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -176,7 +177,7 @@ public class DBUtil {
             }
         }
 
-        return retVal;
+        return "failed";
 
     }
 
@@ -228,7 +229,7 @@ public class DBUtil {
             preparedStmt.close();
 
 
-            if (id < 0) {
+            if (id > 0) {
                 dbConnection.commit();
                 return true;
             }
@@ -248,7 +249,42 @@ public class DBUtil {
         return false;
     }
 
-    public void checkReservation(String confirmation_code) {
+    public List<Reservation> checkReservation(String confirmation_code) {
 
+        Connection dbConnection = null;
+        PreparedStatement preparedStmt;
+        List<Reservation> reservation = null;
+        try {
+            dbConnection = this.dataSource.getConnection();
+            preparedStmt = dbConnection.prepareStatement("select room_number, booking_for_date, status from reservation_details " +
+                    "where confirmation_code=?");
+            preparedStmt.setString(1,confirmation_code);
+            ResultSet resultSet = preparedStmt.executeQuery();
+            reservation = new ArrayList<Reservation>();
+            while(resultSet.next()) {
+                Reservation res = new Reservation();
+                res.setRoomNumber(resultSet.getInt("room_number"));
+                res.setConfirmationNumber(confirmation_code);
+                res.setReservationDate(resultSet.getDate("booking_for_date").toString());
+                res.setStatus(resultSet.getInt("status"));
+                reservation.add(res);
+            }
+            resultSet.close();
+            preparedStmt.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (dbConnection != null) {
+                try {
+                    dbConnection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return reservation;
     }
 }

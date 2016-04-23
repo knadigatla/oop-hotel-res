@@ -32,11 +32,13 @@ public class Test {
             user.setAddress("sunnyvale");
             user.setEmail("ki@gmail.com");
 
-            if(dbUtil.makeReservation(user, java.sql.Date.valueOf("2016-04-29"), 3, "Guest Room King"))
-                System.out.println("Successfulllllll");
-            else
-                System.out.println("Failed :(");
+//            if(dbUtil.makeReservation(user, java.sql.Date.valueOf("2016-04-29"), 3, "Guest Room King"))
+//                System.out.println("Successfulllllll");
+//            else
+//                System.out.println("Failed :(");
+//            System.out.println(dbUtil.checkReservation("fc5d055f-a5ba-47b3-a6e6-ae893801dc0a").size());
 
+            dbUtil.cancelReservation("c5fee05f-b5d6-4edf-a10d-bad083671214");
 
 
         } catch (PropertyVetoException e) {
