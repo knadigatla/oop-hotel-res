@@ -8,12 +8,15 @@ import com.itu.metadata.FlywayDataSourceImpl;
 import com.itu.metadata.FlywayMigrations;
 import com.itu.util.CommonUtil;
 import com.itu.util.DBUtil;
+import org.apache.log4j.Logger;
 
 import java.beans.PropertyVetoException;
 import java.util.*;
 
 
 public class HotelMain {
+
+    final static Logger LOG = Logger.getLogger(HotelMain.class);
 
 
     public static void printMainMenu() {

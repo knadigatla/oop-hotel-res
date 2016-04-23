@@ -1,10 +1,9 @@
 package com.itu.metadata;
 
-import com.itu.util.PropertyFetcher;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import javax.sql.DataSource;
+import org.apache.log4j.Logger;
+
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -13,13 +12,14 @@ public class FlywayDataSourceImpl implements FlywayDataSource {
 
     protected ComboPooledDataSource dataSource;
 
+    final static Logger LOG = Logger.getLogger(FlywayDataSourceImpl.class);
+
     public FlywayDataSourceImpl() throws PropertyVetoException {
         this.dataSource = new ComboPooledDataSource();
-        PropertyFetcher metadataProperties = new PropertyFetcher(new File(getClass().getClassLoader().getResource("db.properties").getFile()));
-        this.dataSource.setDriverClass(metadataProperties.getProperty("DB_DRIVER_CLASS"));
-        this.dataSource.setJdbcUrl(metadataProperties.getProperty("DB_URL"));
-        this.dataSource.setUser(metadataProperties.getProperty("DB_USERNAME"));
-        this.dataSource.setPassword(metadataProperties.getProperty("DB_PASSWORD"));
+        this.dataSource.setDriverClass("org.h2.Driver");
+        this.dataSource.setJdbcUrl("jdbc:h2:file:test-db/oop-metadata");
+        this.dataSource.setUser("test");
+        this.dataSource.setPassword("");
     }
 
 
