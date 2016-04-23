@@ -1,10 +1,13 @@
 package com.itu.util;
 
 import com.itu.mdObjects.RAvail;
+import com.itu.mdObjects.User;
 import com.itu.metadata.FlywayDataSource;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class DBUtil {
@@ -61,8 +64,43 @@ public class DBUtil {
             }
         }
 
-
         return rAvail;
     }
 
+    public void makeReservation(User user, Date checkIn, int numberOfDays, String roomType) {
+
+
+    }
+
+    public List<String> listOfRoomTypes() {
+
+        Connection dbConnection = null;
+        PreparedStatement preparedStmt;
+        List<String> roomTypes = new ArrayList<String>();
+
+        try {
+            dbConnection = this.dataSource.getConnection();
+            preparedStmt = dbConnection.prepareStatement("select room_type from room_type");
+            ResultSet resultSet = preparedStmt.executeQuery();
+            if(resultSet.next()) {
+                roomTypes.add(resultSet.getString("room_type"));
+            }
+            resultSet.close();
+            preparedStmt.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            if (dbConnection != null) {
+                try {
+                    dbConnection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return roomTypes;
+    }
 }
